@@ -7,6 +7,7 @@ from service import library_pb2_grpc, library_pb2
 
 class LibraryServicer(library_pb2_grpc.InventoryServiceServicer):
     def __init__(self, *args, **kwargs):
+        # Initialize the books dictionary，key is isbn, value is book, stored in memory
         b1 = {"isbn": "0001",
               "title": "The Hitchhiker's Guide to the Galaxy",
               "author": "Douglas Adams",
@@ -28,19 +29,15 @@ class LibraryServicer(library_pb2_grpc.InventoryServiceServicer):
         isbn = request.isbn
         logging.info("isbn: %s", isbn)
         if request.isbn in self.books:
-            logging.info("Book found")
             b = self.books[request.isbn]
-            logging.info("Book: %s", b)
 
             return library_pb2.GetBookResponse(book=b)
         else:
-            logging.info("Book not found")
             context.set_code(grpc.StatusCode.NOT_FOUND)
             context.set_details("Book not found")
             return library_pb2.GetBookResponse()
 
     def CreateBook(self, request, context):
-        # print("CreateBook called: " + request)
         if request.book.isbn in self.books:
             context.set_code(grpc.StatusCode.ALREADY_EXISTS)
             context.set_details("Book already exists")
