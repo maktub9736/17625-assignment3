@@ -6,7 +6,7 @@ from service import library_pb2_grpc, library_pb2
 
 
 class LibraryServicer(library_pb2_grpc.InventoryServiceServicer):
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
         # Initialize the books dictionary，key is isbn, value is book, stored in memory
         b1 = {"isbn": "0001",
               "title": "The Hitchhiker's Guide to the Galaxy",
@@ -31,16 +31,16 @@ class LibraryServicer(library_pb2_grpc.InventoryServiceServicer):
         if request.isbn in self.books:
             b = self.books[request.isbn]
 
-            return library_pb2.GetBookResponse(book=b)
+            return library_pb2.GetBookResponse(book=b) # return the book
         else:
             context.set_code(grpc.StatusCode.NOT_FOUND)
-            context.set_details("Book not found")
+            context.set_details("Book not found") # set the error message
             return library_pb2.GetBookResponse()
 
     def CreateBook(self, request, context):
         if request.book.isbn in self.books:
             context.set_code(grpc.StatusCode.ALREADY_EXISTS)
-            context.set_details("Book already exists")
+            context.set_details("Book already exists") # set the error message
             return library_pb2.CreateBookResponse(success=False)
         else:
             self.books[request.book.isbn] = request.book
@@ -48,7 +48,7 @@ class LibraryServicer(library_pb2_grpc.InventoryServiceServicer):
 
 
 def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10)) # allow 10 concurrent requests
     library_pb2_grpc.add_InventoryServiceServicer_to_server(LibraryServicer(), server)
     listen_addr = '[::]:50051'
     server.add_insecure_port(listen_addr)
